@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- Slot Machine: Header -->
+    <div>
+        <img class="logo"
+            src="https://contentservice.mc.reyrey.net/image_v1.0.0/?id=cf4ba900-6b9e-5eda-80e5-aad845c084fa"
+            alt="Lucky Deals" />
+    </div>
+    <div class="container">
+
+        <div class="slot-machine">
+            <div class="sm-main">
+
+                <div id="Slot1" class="slot"></div>
+                <div id="Slot2" class="slot"></div>
+                <div id="Slot3" class="slot"></div>
+
+                <div class="slot-handle">
+                    <div class="slot-gear">
+                        <div class="slot-knob cta-btn"></div>
+                    </div>
+                </div>
+
+                <div class="sm-action">
+                    <button class="cta-btn" style="display: none;">احصل على الجائزة</button>
+                </div>
+
+                <div id="ResultBanner" class="sm-result">
+                    <h1 id="Result"></h1>
+                    <div class="btn" style="padding:20px 20px; display: none;"><a
+                            href="https://www.hendrickhondapompanobeach.com/schedule-service.htm">العب لتربح</a>
+                    </div>
+                </div>
+
+                <div class="sm-legend">
+                    <ul>
+                        <li>الجوائز</li><br>
+                        <li>
+                            <span class="first-option"></span>
+                            <span class="second-option"></span>
+                            <span class="third-option"></span><br>
+                            <span class="equation">جمعههم لتربح ايفون</span>
+                        </li>
+                        <li>
+                            <span class="first-option"></span>
+                            <span class="second-option"></span>
+                            <span class="third-option"></span><br>
+                            <span class="equation">جمعهم لتربح $100</span>
+                        </li>
+                        <li>
+                            <span class="first-option"></span>
+                            <span class="second-option"></span>
+                            <span class="third-option"></span><br>
+                            <span class="equation">بيكون لك محاولة أخرى </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        var loses = 0;
+
+        class SlotMachine {
+            constructor(args) {
+                this.start = args;
+                this.positions = ['-5px', '-108px', '120px'];
+                this.winningCombinations = [
+                    { id: 0, name: 'ايفون' },
+                    { id: 1, name: '15% OFF Any Major Service¹' },
+                    { id: 2, name: '10% OFF Any Minor Service²' },
+                    { id: 3, name: '$10 OFF Oil Change Service' }
+                ];
+                this.celebrationImage = `<img src="../img/hey.gif" alt="احتفال" style="width: 100%; height: 100%;"/>`;
+                this.firstSpinCompleted = false;
+            }
+
+            init() {
+                const startBtns = document.getElementsByClassName(this.start);
+
+                for (let i = 0; i < startBtns.length; i++) {
+                    startBtns[i].addEventListener('click', function () {
+                        this.playSlots();
+                    }.bind(this), false);
+                }
+            }
+
+            playSlots() {
+                const resultBanner = document.getElementById('ResultBanner');
+                const resultText = document.getElementById('Result');
+                const playButton = document.querySelector('.sm-action .cta-btn');
+
+                if (resultBanner.classList.contains('show')) {
+                    resultBanner.style.transition = 'none';
+                    resultBanner.classList.remove('show');
+                }
+
+                if (!this.firstSpinCompleted) {
+                    let reelOne = 2;
+                    let reelTwo = 2;
+                    let reelThree = 2;
+
+                    this.setReels(reelOne, 'Slot1');
+                    this.setReels(reelTwo, 'Slot2');
+                    this.setReels(reelThree, 'Slot3');
+
+                    this.delay(4000).then(function () {
+                        this.stopReels(reelOne, 'Slot1');
+                        this.stopReels(reelTwo, 'Slot2');
+                        this.stopReels(reelThree, 'Slot3');
+                    }.bind(this)).then(function () {
+                        this.showResult(-1);
+                        this.firstSpinCompleted = true;
+                        playButton.style.display = 'none';
+                    }.bind(this));
+                } else {
+                    this.startWinningSpin();
+                }
+            }
+
+            startWinningSpin() {
+                let winningIndex = 0;
+                this.setReels(winningIndex, 'Slot1');
+                this.setReels(winningIndex, 'Slot2');
+                this.setReels(winningIndex, 'Slot3');
+
+                this.delay(4000).then(() => {
+                    this.stopReels(winningIndex, 'Slot1');
+                    this.stopReels(winningIndex, 'Slot2');
+                    this.stopReels(winningIndex, 'Slot3');
+
+                    this.showResult(winningIndex);
+                });
+            }
+
+            showResult(index) {
+                let message;
+                const playButton = document.querySelector('.sm-action .cta-btn');
+                const resultBanner = document.getElementById('ResultBanner');
+
+                if (index === -1) {
+                    message = 'حظ أوفر المرة القادمة';
+                    playButton.style.display = 'none';
+                } else {
+                    message = `لقد ربحت  ${this.winningCombinations[index].name}!`;
+                    playButton.style.display = 'inline-block';
+                    this.showCelebration();
+
+                    setTimeout(() => {
+                        this.showSweetAlert(this.winningCombinations[index].name);
+                    }, 2000);
+                }
+
+                resultBanner.style.transition = 'max-height 3s ease-in, opacity .5s ease-in';
+                resultBanner.className += ' show';
+                document.getElementById('Result').innerHTML = message;
+            }
+
+            showSweetAlert(prizeName) {
+                Swal.fire({
+                    title: "مبروك كسبت " + prizeName + "!",
+                    text: "احصل على جائزة رائعة!",
+                    imageUrl: "https://cf-img-a-in.tosshub.com/sites/visualstory/wp/2024/06/image-885.png?size=*:900",
+                    imageWidth: 200,
+                    imageHeight: 200,
+                    showCancelButton: true,
+                    confirmButtonText: 'احصل على الجائزة',
+                    cancelButtonText: 'إلغاء',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "https://www.google.com";
+                    }
+                });
+            }
+
+            showCelebration() {
+                const celebrationDiv = document.createElement('div');
+                celebrationDiv.style.position = 'fixed';
+                celebrationDiv.style.top = '0';
+                celebrationDiv.style.left = '0';
+                celebrationDiv.style.width = '100vw';
+                celebrationDiv.style.height = '100vh';
+                celebrationDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                celebrationDiv.innerHTML = this.celebrationImage;
+
+                document.body.appendChild(celebrationDiv);
+
+                setTimeout(() => {
+                    celebrationDiv.remove();
+                }, 2000);
+            }
+
+            setReels(rand, slot) {
+                setTimeout(function () {
+                    document.getElementById(slot).className += ' motion';
+                }, rand * 200);
+            }
+
+            stopReels(rand, slot) {
+                document.getElementById(slot).style.backgroundPositionY = this.positions[rand];
+                document.getElementById(slot).style.transition = 'background-position ease-out 5s';
+                document.getElementById(slot).classList.remove('motion');
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // App Init
+        (function () {
+            let newSlotsGame = new SlotMachine('cta-btn');
+            newSlotsGame.init();
+        })();
+    </script>
+</body>
+
+</html>
